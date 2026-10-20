@@ -67,10 +67,10 @@ class Assumptions:
     exit_year: int = 5
     exit_price: float = 560_000.0
     cost_of_sale_rate: float = 0.03
-    rate_buydown: float = 40_000.0
-    seller_concessions: float = 30_000.0
+    rate_buydown: float = 0
+    seller_concessions: float = 0
     buydown_by_year: Dict[int, float] = field(
-        default_factory=lambda: {1: 0.03, 2: 0.02, 3: 0.01, 4: 0.0, 5: 0.0}
+        default_factory=lambda: {1: 0.00, 2: 0.00, 3: 0.00, 4: 0.0, 5: 0.0}
     )
 
     def buydown_schedule_valid(self) -> bool:
