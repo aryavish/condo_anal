@@ -27,7 +27,29 @@ chart_df = pd.DataFrame(
         "Net Levered Cash Flow": cf["Net Levered Cash Flow"],
     }
 ).set_index("Year")
-st.bar_chart(chart_df)
+st.bar_chart(chart_df, alt="Net levered cash flow by year through the exit")
+
+st.subheader("Equity Built over the Hold")
+st.caption(
+    "Principal paydown is the portion of debt service covered by NOI. "
+    "Asset appreciation compounds the purchase price at the gross year-over-year growth rate."
+)
+growth = metrics["asset_growth"] if metrics["asset_growth"] is not None else 0.0
+equity_df = pd.DataFrame(
+    {
+        "Year": cf["Year"],
+        "Equity built from principal paydown": (-cf["Principal Paydown"]).cumsum(),
+        "Equity from asset appreciation": assumptions.purchase_price * ((1.0 + growth) ** cf["Year"] - 1.0),
+    }
+)
+st.line_chart(
+    equity_df,
+    x="Year",
+    y=["Equity built from principal paydown", "Equity from asset appreciation"],
+    x_label="Year",
+    y_label="Equity built ($)",
+    alt="Equity from principal paydown and from asset appreciation over the hold",
+)
 
 schedule = cf.set_index("Year").T
 schedule.columns = [f"Year {int(year)}" for year in schedule.columns]
