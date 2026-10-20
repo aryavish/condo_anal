@@ -161,12 +161,9 @@ def run_model(a: Assumptions) -> dict:
     hold_cf = levered_cf[: exit_year + 1]
     irr = excel_irr(hold_cf)
 
-    year1_coc = (levered_cf[1] / equity) if equity else None
-    total_net_cf = float(np.sum(hold_cf))
-    # Operating levered cash flow over the hold, separate from the sale.
-    holding_period_cf = float(np.sum(noi[1 : exit_year + 1] + debt_service[1 : exit_year + 1]))
-    reversion_year_cf = float(terminal[exit_year])
-    moic = (float(np.sum(levered_cf[1 : exit_year + 1])) / equity) if equity else None
+    received = levered_cf[1 : exit_year + 1]
+    total_levered_cf = float(np.sum(received[received > 0]))
+    moic = (total_levered_cf / equity) if equity else None
     if a.purchase_price:
         asset_growth = (a.exit_price / a.purchase_price) ** (1.0 / exit_year) - 1.0
         carrying_cost = (a.annual_hoa + a.annual_taxes + a.annual_insurance) / a.purchase_price
@@ -227,10 +224,7 @@ def run_model(a: Assumptions) -> dict:
         "holding_period": exit_year,
         "equity": equity,
         "irr": irr,
-        "year1_coc": year1_coc,
-        "total_net_cf": total_net_cf,
-        "holding_period_cf": holding_period_cf,
-        "reversion_year_cf": reversion_year_cf,
+        "total_levered_cf": total_levered_cf,
         "moic": moic,
         "exit_price": a.exit_price,
         "asset_growth": asset_growth,

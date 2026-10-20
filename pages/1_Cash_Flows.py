@@ -1,3 +1,4 @@
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -10,8 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.title("30-Year Condo Investment Cash Flow Pro-Forma")
-st.caption("Under-the-hood calculations through the selected exit year.")
+st.title("Rent to Own Cash Flow Projected!")
 
 assumptions = render_sidebar("cash_flows")
 result = run_model(assumptions)
@@ -42,12 +42,24 @@ equity_df = pd.DataFrame(
         "Equity from asset appreciation": assumptions.purchase_price * ((1.0 + growth) ** cf["Year"] - 1.0),
     }
 )
-st.line_chart(
-    equity_df,
-    x="Year",
-    y=["Equity built from principal paydown", "Equity from asset appreciation"],
-    x_label="Year",
-    y_label="Equity built ($)",
+equity_long = equity_df.melt("Year", var_name="Source", value_name="Equity built ($)")
+last_year = int(equity_df["Year"].max())
+equity_chart = (
+    alt.Chart(equity_long)
+    .mark_line()
+    .encode(
+        x=alt.X(
+            "Year:Q",
+            title="Year",
+            scale=alt.Scale(domain=[0, last_year], nice=False, clamp=True),
+            axis=alt.Axis(tickMinStep=1),
+        ),
+        y=alt.Y("Equity built ($):Q", title="Equity built ($)"),
+        color=alt.Color("Source:N", title=None),
+    )
+)
+st.altair_chart(
+    equity_chart,
     alt="Equity from principal paydown and from asset appreciation over the hold",
 )
 

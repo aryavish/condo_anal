@@ -10,8 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.title("Condo Real Estate Investment Model")
-st.caption("Sources & uses and executive returns. Change yellow-cell inputs in the sidebar.")
+st.title("Rent to Own Web App!")
 
 assumptions = render_sidebar("home")
 result = run_model(assumptions)
@@ -71,37 +70,16 @@ c3.metric(
     help="Annualized internal rate of return on levered cash flows over the hold.",
 )
 
-c4, c5, c6 = st.columns(3)
-c4.metric(
-    "Year 1 Cash-on-Cash Return",
-    irr_fmt(metrics["year1_coc"]),
-    help="First-year net cash yield on invested equity.",
-)
+_, c5, c6 = st.columns(3)
 c5.metric(
-    "Total Net Cash Flow",
-    money_fmt(metrics["total_net_cf"]),
-    help="Cumulative net cash flow over the hold, including the initial equity outflow.",
+    "Total Levered Cash Flows",
+    money_fmt(metrics["total_levered_cf"]),
+    help="Sum of positive levered cash flows received over the hold, including disposition.",
 )
 c6.metric(
     "Equity Multiple (MOIC)",
     moic_fmt(metrics["moic"]),
-    help="Total cash distributed divided by initial equity.",
-)
-
-h1, h2 = st.columns(2)
-h1.metric(
-    "Holding Period Cash Flows",
-    money_fmt(metrics["holding_period_cf"]),
-    help="Levered operating cash flow from year 1 through the exit year, excluding the initial equity investment and the sale.",
-)
-h2.metric(
-    "Reversion Year Cash Flows",
-    money_fmt(metrics["reversion_year_cf"]),
-    help="Net sale proceeds in the exit year, after cost of sale and mortgage payoff.",
-)
-st.caption(
-    "Holding period cash flows and reversion year cash flows split the cash distributed "
-    "after the initial equity investment. Together with that equity outflow, they equal total net cash flow."
+    help="Total levered cash flows divided by initial equity invested.",
 )
 
 c7, c8, c9 = st.columns(3)

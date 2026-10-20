@@ -7,35 +7,53 @@ import streamlit as st
 from engine import Assumptions
 
 STORE = "_assumption_store"
+_STAMP = "_defaults_stamp"
 
-DEFAULTS = {
-    "purchase_price": 580_000.0,
-    "closing_costs": 12_000.0,
-    "initial_renovation": 0.0,
-    "seller_concessions": 30_000.0,
-    "ltv_pct": 75.0,
-    "mortgage_rate_pct": 7.25,
-    "loan_term_years": 30,
-    "rate_buydown": 40_000.0,
-    "gross_annual_rent": 45_000.0,
-    "vacancy_rate_pct": 5.0,
-    "annual_hoa": 7_200.0,
-    "annual_taxes": 4_000.0,
-    "annual_insurance": 3_000.0,
-    "growth_rate_pct": 3.0,
-    "exit_year": 5,
-    "exit_price": 560_000.0,
-    "cost_of_sale_rate_pct": 3.0,
-    "buydown_y1_pct": 3.0,
-    "buydown_y2_pct": 2.0,
-    "buydown_y3_pct": 1.0,
-    "buydown_y4_pct": 0.0,
-    "buydown_y5_pct": 0.0,
-}
+
+def _pct_points(rate: float) -> float:
+    return round(rate * 100.0, 6)
+
+
+def _defaults_from_assumptions() -> dict:
+    assumptions = Assumptions()
+    defaults = {
+        "purchase_price": float(assumptions.purchase_price),
+        "closing_costs": float(assumptions.closing_costs),
+        "initial_renovation": float(assumptions.initial_renovation),
+        "seller_concessions": float(assumptions.seller_concessions),
+        "ltv_pct": _pct_points(assumptions.ltv),
+        "mortgage_rate_pct": _pct_points(assumptions.mortgage_rate),
+        "loan_term_years": int(assumptions.loan_term_years),
+        "rate_buydown": float(assumptions.rate_buydown),
+        "gross_annual_rent": float(assumptions.gross_annual_rent),
+        "vacancy_rate_pct": _pct_points(assumptions.vacancy_rate),
+        "annual_hoa": float(assumptions.annual_hoa),
+        "annual_taxes": float(assumptions.annual_taxes),
+        "annual_insurance": float(assumptions.annual_insurance),
+        "growth_rate_pct": _pct_points(assumptions.growth_rate),
+        "exit_year": int(assumptions.exit_year),
+        "exit_price": float(assumptions.exit_price),
+        "cost_of_sale_rate_pct": _pct_points(assumptions.cost_of_sale_rate),
+    }
+    for year in range(1, 6):
+        defaults[f"buydown_y{year}_pct"] = _pct_points(assumptions.buydown_by_year.get(year, 0.0))
+    return defaults
+
+
+DEFAULTS = _defaults_from_assumptions()
 
 
 def _store() -> dict:
     stored = st.session_state.setdefault(STORE, {})
+    stamp = tuple(sorted(DEFAULTS.items()))
+    if stored.get(_STAMP) != stamp:
+        stored.update(DEFAULTS)
+        stored[_STAMP] = stamp
+        for name, value in DEFAULTS.items():
+            suffix = f"__{name}"
+            for key in list(st.session_state.keys()):
+                if str(key).endswith(suffix):
+                    st.session_state[key] = value
     for key, value in DEFAULTS.items():
         stored.setdefault(key, value)
     return stored
